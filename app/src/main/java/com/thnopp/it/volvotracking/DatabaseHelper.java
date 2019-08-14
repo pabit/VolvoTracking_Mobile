@@ -648,6 +648,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 " WHERE "  + KEY_DEL_STATUS + "='A' AND " + KEY_DEL_DEPART + " IS NULL";
 
         db.execSQL(strSQL);
+        strSQL = "DELETE FROM " + TABLE_DELIVERY +
+                " WHERE "  + KEY_DEL_STATUS + "='U'";
+        db.execSQL(strSQL);
 
     }
 

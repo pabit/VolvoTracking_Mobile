@@ -7,12 +7,30 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * Created by THLT88 on 10/20/2017.
@@ -23,6 +41,8 @@ public class MenuActivity extends Activity {
     TextView lbltype, lbluser ;
 
     Button scan, trip, logout, trip_p,upload,fuel,wi ;
+
+    Long id;
 
     DatabaseHelper db;
 
@@ -47,6 +67,12 @@ public class MenuActivity extends Activity {
         //lst = db.getAllVIN();
 
         //assign value into label
+        Vinmaster v = db.findAvaialble_Order();
+        if (v != null){
+            id = v.getId();
+        }else{
+            id = 0L;
+        }
         lbluser = (TextView)findViewById(R.id.lbluser);
         lbluser.setText(Global.user);
 
@@ -111,9 +137,9 @@ public class MenuActivity extends Activity {
         trip_p.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                Intent intent = new Intent(getApplicationContext(), TripPendingActivity.class);
-                startActivity(intent);
+                new chk_holding_status().execute();
+               /* Intent intent = new Intent(getApplicationContext(), TripPendingActivity.class);
+                startActivity(intent);*/
 
             }
         });
@@ -179,6 +205,125 @@ public class MenuActivity extends Activity {
         return false;
     }
 
+    private class chk_holding_status extends AsyncTask<Void,Integer, String> {
+        @Override
+        protected  void onPreExecute(){
+
+            super.onPreExecute();
+
+        }
+        @Override
+        protected String doInBackground(Void... params) {
+            return uploadProcess();
+
+        }
+
+        @SuppressWarnings("deprecation")
+        private String uploadProcess(){
+            String responseString = null;
+            // add data to table via json
+
+            RequestQueue queue = Volley.newRequestQueue(MenuActivity.this);
+            DefaultRetryPolicy retryPolicy = new DefaultRetryPolicy(0, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+            StringRequest request = new StringRequest(Request.Method.POST, Config.CHK_HOLD, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+
+                    //   Toast.makeText(FModelActivity.this, "my success"+response, Toast.LENGTH_LONG).show();
+                   // Log.i("My success",""+response);
+
+                    if (response.contains("OK") ){
+                        Intent intent = new Intent(getApplicationContext(), TripPendingActivity.class);
+                        startActivity(intent);
+                    } else  if (response.contains("HOLD")){
+                        Toast.makeText(getBaseContext(), "This job " + id + " was HOLD!!!", Toast.LENGTH_LONG).show();
+                    }else{
+                        Toast.makeText(getBaseContext(), "data error " + response, Toast.LENGTH_LONG).show();
+                    }
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Toast.makeText(MenuActivity.this, "my error :"+error, Toast.LENGTH_LONG).show();
+                   // Log.i("My error",""+error);
+                }
+            }){
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    Map<String, String> params = new HashMap<String, String>();
+                    params.put(Config.HEAD_KEY, Config.HEAD_VALUE);
+                    return params;
+                }
+
+                @Override
+                protected Map<String, String> getParams() throws AuthFailureError {
+
+                    SharedPreferences prefs = getSharedPreferences("UserData", MODE_PRIVATE);
+                    String username = prefs.getString("username","");
+
+                    Map<String,String> map = new HashMap<String, String>();
+                    map.put("id",String.valueOf(id));
+                    map.put("user",username);
+                    return map;
+                }
+            };
+            request.setRetryPolicy(retryPolicy);
+            queue.add(request);
+
+            return  responseString;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            Log.e(TAG, "Response from server: " + result);
+
+            super.onPostExecute(result);
+
+        }
+
+    }
+    public class chk_holding_statusd extends AsyncTask<Void, Void, Void> {
+        RestService rs;
+        String result;
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            rs = new RestService(getBaseContext(),"","",Global.user,Global.conf);
+        }
+
+        @Override
+        protected Void doInBackground(Void... arg0) {
+            try{
+                //  rs.Connect();
+                //result = rs.GetJsonString("FixedAsset");
+                //result = rs.chkJobHeader(HRef);
+
+            }catch (Exception ex){
+//                Toast.makeText(getBaseContext(),ex.getMessage(),Toast.LENGTH_LONG).show();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result2) {
+            super.onPostExecute(result2);
+
+
+            if (result== null){
+                Toast.makeText(getBaseContext(),result,Toast.LENGTH_SHORT).show();
+            }else{
+
+                if (result.contains("OK") ){
+                    Intent intent = new Intent(getApplicationContext(), TripPendingActivity.class);
+                    startActivity(intent);
+                } else  if (result.contains("HOLD")){
+                    Toast.makeText(getBaseContext(), "This job " + id + " was HOLD!!!", Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(getBaseContext(), "data error " + result, Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+    }
 
     @Override
     public void onBackPressed() {

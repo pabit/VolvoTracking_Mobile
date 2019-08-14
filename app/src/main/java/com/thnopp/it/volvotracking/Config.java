@@ -11,6 +11,7 @@ public class Config {
     public static final String LOAD_VIN_URL = "http://203.154.71.73:8080/volvo/api/vin";//  = "http://THLT5CG7312T5F/tms/loadvin.php";
     public static final String CHK_VIN = "http://203.154.71.73:8080/volvo/api/updatevin";
     public static final String CHK_VIN1 = "http://203.154.71.73:8080/volvo/api/updatevin1";
+    public static final String CHK_HOLD = "http://203.154.71.73:8080/volvo/api/chkhold";
 
     // Directory name to store captured images and videos
     public static final String IMAGE_DIRECTORY_NAME = "Volvo Picture Upload";

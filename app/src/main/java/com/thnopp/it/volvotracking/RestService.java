@@ -2,6 +2,7 @@ package com.thnopp.it.volvotracking;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
@@ -36,6 +37,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.List;
+
+import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Created by Seyha Uchiha on 1/2/2018.
@@ -249,13 +252,15 @@ public class RestService {
 
     }
 
-    public String PostPOD_F(List<Vinmaster> lst) {
+    public String PostPOD_F(List<Vinmaster> lst, String user) {
         String R = "OK";
-        String VIN, ltcode, user, depart, arrival;
+        String VIN, ltcode,  depart, arrival;
         Long id,mbegin,mend;
         db = DatabaseHelper.getInstance(context);
         int res;
         try {
+
+
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmm");
             String t_a, t_d;
             for (Vinmaster t : lst) {
@@ -278,7 +283,7 @@ public class RestService {
                 mend = t.getMend();
 
 
-                res = postPOD(depart,arrival, VIN, ltcode, id,mbegin,mend);
+                res = postPOD(depart,arrival, VIN, ltcode, id,mbegin,mend,user);
                 if (res == 0) {
                     R = null;
                     //   db.updateVIN_statusPOD(VIN);
@@ -299,7 +304,7 @@ public class RestService {
     }
 
 
-    public int postPOD(String depart, String arrival, String VIN, String ltcode, Long id,Long mbegin,Long mend) {
+    public int postPOD(String depart, String arrival, String VIN, String ltcode, Long id,Long mbegin,Long mend, String user) {
         int result = 0;
         try {
             String sResponse = null;
@@ -321,6 +326,7 @@ public class RestService {
             entity.addPart("depart",
                     new StringBody(depart));
             entity.addPart("ltcode", new StringBody(ltcode));
+            entity.addPart("user", new StringBody(user));
             entity.addPart("id", new StringBody(id.toString()));
             entity.addPart("mbegin", new StringBody(mbegin.toString()));
             entity.addPart("mend", new StringBody(mend.toString()));

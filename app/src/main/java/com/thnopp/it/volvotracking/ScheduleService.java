@@ -233,7 +233,10 @@ public class ScheduleService extends Service implements LocationListener {
             try{
               //  rs.Connect();
                 //result = rs.GetJsonString("FixedAsset");
-                result = rs.PostPOD_F(lst_pod);
+                SharedPreferences prefs = getSharedPreferences("UserData", MODE_PRIVATE);
+                String username = prefs.getString("username","");
+
+                result = rs.PostPOD_F(lst_pod, username);
 
             }catch (Exception ex){
 //                Toast.makeText(getBaseContext(),ex.getMessage(),Toast.LENGTH_LONG).show();

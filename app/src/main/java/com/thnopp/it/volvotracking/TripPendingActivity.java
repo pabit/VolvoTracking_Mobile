@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -348,7 +349,9 @@ public class TripPendingActivity extends Activity {
             try{
                 //  rs.Connect();
                 //result = rs.GetJsonString("FixedAsset");
-                result = rs.PostPOD_F(lst_pod);
+                SharedPreferences prefs = getSharedPreferences("UserData", MODE_PRIVATE);
+                String username = prefs.getString("username","");
+                result = rs.PostPOD_F(lst_pod,username);
 
             }catch (Exception ex){
 //                Toast.makeText(getBaseContext(),ex.getMessage(),Toast.LENGTH_LONG).show();
@@ -365,6 +368,7 @@ public class TripPendingActivity extends Activity {
             }*/
         }
     }
+
 
 
     @Override
